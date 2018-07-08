@@ -133,6 +133,13 @@
                     <baseClassForTests>name.lorenzani.andrea.worldpay.controller.ContractVerifierBaseTest</baseClassForTests>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <configuration>
+                    <generateGitPropertiesFile>false</generateGitPropertiesFile>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

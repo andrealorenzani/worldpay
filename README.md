@@ -28,6 +28,13 @@ The page can be found at `http://localhost:9000/swagger-ui.html`
 
 # Release Notes
 
+## v1.0.1
+| Type | Description | Notes |
+| -- | -- | -- |
+| Feature | Offers can be deleted only when they are not expired | The text of the test says: `Offers may also be explicitly cancelled before they expire.` |
+| BAU     | Cleaned pom (unused plugins) and code (unused Jax serializers) ||
+| Test    | Tested that an expired offer cannot be retrieved | Tested through contract verifier and H2 data injected| 
+
 ## v1.0.0
 | Type | Description | Notes |
 | -- | -- | -- |

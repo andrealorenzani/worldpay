@@ -12,7 +12,7 @@
 
     <groupId>name.andrea.lorenzani</groupId>
     <artifactId>worldpay</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>Worldpay offers</name>
@@ -22,9 +22,7 @@
         <shazamcrest.version>0.11</shazamcrest.version>
         <jackson-datatype-jsr310.version>2.9.6</jackson-datatype-jsr310.version>
         <assertj-swagger.version>0.8.1</assertj-swagger.version>
-        <spring-cloud-contract-maven-plugin.version>2.0.0.RELEASE</spring-cloud-contract-maven-plugin.version>
-        <spring.cloud.contract.verifier>2.0.0.RELEASE</spring.cloud.contract.verifier>
-        <spring.cloud.contract.wiremock>2.0.0.RELEASE</spring.cloud.contract.wiremock>
+        <spring-cloud-contract>2.0.0.RELEASE</spring-cloud-contract>
         <springfox.version>2.7.0</springfox.version>
         <spring.cloud.commons>2.0.0.RELEASE</spring.cloud.commons>
     </properties>
@@ -39,7 +37,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-config-client</artifactId>
-            <version>2.0.0.RELEASE</version>
+            <version>${spring-cloud-contract}</version>
         </dependency>
 
 
@@ -107,7 +105,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-contract-verifier</artifactId>
-            <version>${spring.cloud.contract.verifier}</version>
+            <version>${spring-cloud-contract}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -118,7 +116,7 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-contract-wiremock</artifactId>
-            <version>${spring.cloud.contract.wiremock}</version>
+            <version>${spring-cloud-contract}</version>
             <scope>test</scope>
         </dependency>
 
@@ -129,48 +127,11 @@
             <plugin>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-maven-plugin</artifactId>
-                <version>${spring-cloud-contract-maven-plugin.version}</version>
+                <version>${spring-cloud-contract}</version>
                 <extensions>true</extensions>
                 <configuration>
                     <baseClassForTests>name.lorenzani.andrea.worldpay.controller.ContractVerifierBaseTest</baseClassForTests>
                 </configuration>
-            </plugin>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>diagrams</directory>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.github.jeluard</groupId>
-                <artifactId>plantuml-maven-plugin</artifactId>
-                <version>1.2</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <phase>compile</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <sourceFiles>
-                        <directory>${basedir}</directory>
-                        <includes>/**/*.puml</includes>
-                    </sourceFiles>
-                    <outputDirectory>diagrams/</outputDirectory>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>net.sourceforge.plantuml</groupId>
-                        <artifactId>plantuml</artifactId>
-                        <version>8059</version>
-                    </dependency>
-                </dependencies>
             </plugin>
         </plugins>
     </build>

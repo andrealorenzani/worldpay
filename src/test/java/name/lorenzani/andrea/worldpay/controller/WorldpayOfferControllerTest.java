@@ -85,7 +85,7 @@ public class WorldpayOfferControllerTest {
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .log().everything().
         when()
-            .put("/offer").
+            .post("/offer").
         then().log().everything().
             statusCode(HttpStatus.OK.value())
             .body("title", is(equalTo(title)));
@@ -103,7 +103,7 @@ public class WorldpayOfferControllerTest {
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .log().everything().
         when()
-            .put("/offer").
+            .post("/offer").
         then().log().everything().
             statusCode(HttpStatus.BAD_REQUEST.value());
     }
@@ -120,7 +120,7 @@ public class WorldpayOfferControllerTest {
             .contentType(MediaType.APPLICATION_JSON_VALUE)
             .log().everything().
             when()
-            .put("/offer").
+            .post("/offer").
             then().log().everything().
             statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
     }

@@ -3,7 +3,7 @@ import org.springframework.cloud.contract.spec.Contract
 Contract.make {
     description("Add offer")
     request {
-        method 'PUT'
+        method 'POST'
         url 'offer'
         body("""
             {

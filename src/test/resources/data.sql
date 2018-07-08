@@ -1,3 +1,5 @@
 INSERT INTO offers (id, title, description, vendor, price, currency, expiration, MEMORABLE_WORD) VALUES ('so1', 'First Stored Offer', 'Description of the first stored offer', 'vendor1', 1000, 1, DATEADD(d, 2, GETDATE()), 'a');
 INSERT INTO offers (id, title, description, vendor, price, currency, expiration, MEMORABLE_WORD) VALUES ('so2', 'Second Stored Offer', 'Description of the second stored offer', 'vendor2', 2000, 1, DATEADD(d, 2, GETDATE()), 'a');
 INSERT INTO offers (id, title, description, vendor, price, currency, expiration, MEMORABLE_WORD) VALUES ('so3', 'Third Stored Offer', 'Description of the third stored offer', 'vendor1', 3000, 1, GETDATE(), 'a');
+INSERT INTO offers (id, title, description, vendor, price, currency, expiration, MEMORABLE_WORD) VALUES ('so4', 'Fourth Stored Offer', 'Description of the fourth stored offer', 'vendor1', 13000, 1, DATEADD(d, 2, GETDATE()), 'a');
+INSERT INTO offers (id, title, description, vendor, price, currency, expiration, MEMORABLE_WORD) VALUES ('so5', 'Fifth Stored Offer', 'Description of the fifth stored offer', 'vendor1', 13000, 1, GETDATE(), 'a');

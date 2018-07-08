@@ -13,6 +13,6 @@ public interface StoredOffersRepository extends CrudRepository<StoredOffer, Stri
 
     @Query("SELECT p FROM StoredOffer p WHERE p.expiration > NOW() AND (:title IS NULL OR LOWER(p.title) LIKE CONCAT('%',:title,'%')) AND (:vendor IS NULL OR LOWER(p.vendor) = LOWER(:vendor)) AND (:description IS NULL OR LOWER(p.description) LIKE CONCAT('%',:description,'%')) AND (:minprix IS NULL OR p.price >= :minprix) AND (:maxprix IS NULL OR p.price <= :maxprix)")
     public List<StoredOffer> findByCriteria(@Param("title") String title, @Param("vendor") String vendor, @Param("description") String description, @Param("minprix") BigDecimal minprix, @Param("maxprix") BigDecimal maxprix);
-    @Query("DELETE FROM StoredOffer p WHERE :id = p.id and :memorableWord = p.memorableWord")
+    @Query("DELETE FROM StoredOffer p WHERE p.expiration > NOW() AND :id = p.id AND :memorableWord = p.memorableWord")
     public Integer deleteIfMemorable(@Param("id") String id, @Param("memorableWord") String memorableWord);
 }

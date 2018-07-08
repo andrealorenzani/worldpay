@@ -11,10 +11,7 @@ import org.joda.time.DateTime;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -54,6 +51,9 @@ public class OfferService {
         StoredOffer so = offersDao.findById(id).orElse(new StoredOffer());
         if(Objects.isNull(so.getId()) || !so.getMemorableWord().equals(memorableWord)){
             throw new BadRequest("Wrong ID or MEMORABLEWORD");
+        }
+        if(so.getExpiration().before(new Date())){
+            throw new BadRequest("Offer already expired");
         }
         offersDao.delete(so);
         return so;

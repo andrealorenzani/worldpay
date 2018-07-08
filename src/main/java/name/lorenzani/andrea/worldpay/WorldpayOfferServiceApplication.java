@@ -46,13 +46,6 @@ public class WorldpayOfferServiceApplication {
 	}
 
 	@Bean
-	public Jaxb2Marshaller marshaller() {
-		Jaxb2Marshaller marshaller = new Jaxb2Marshaller();
-		marshaller.setPackagesToScan("name.lorenzani.andrea.worldpay");
-		return marshaller;
-	}
-
-	@Bean
 	public ObjectMapper objectMapper() {
 		ObjectMapper objectMapper = new ObjectMapper();
 		objectMapper.setDateFormat(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss"));
@@ -66,8 +59,6 @@ public class WorldpayOfferServiceApplication {
 	@Bean
 	public WebServiceTemplate webServiceTemplate() {
 		WebServiceTemplate template = new WebServiceTemplate();
-		template.setMarshaller(marshaller());
-		template.setUnmarshaller(marshaller());
 		return template;
 	}
 

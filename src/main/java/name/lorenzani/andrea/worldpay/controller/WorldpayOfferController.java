@@ -49,7 +49,7 @@ public class WorldpayOfferController {
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorMessage.class)
     })
     @ApiOperation(value = "createOffer", notes = "Insert a new offer")
-    @PutMapping(value = "/offer",
+    @PostMapping(value = "/offer",
             consumes = MediaType.APPLICATION_JSON_VALUE ,
             produces = MediaType.APPLICATION_JSON_VALUE)
     public StoredOffer createOffer(@Valid @RequestBody Offer request) {

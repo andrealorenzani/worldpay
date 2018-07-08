@@ -19,7 +19,7 @@ schemes:
 - "http"
 paths:
   /offer:
-    put:
+    post:
       tags:
       - "offer"
       summary: "Insert a new offer"

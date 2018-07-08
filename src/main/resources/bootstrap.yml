@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: worldpay-offer
+  cloud:
+    enabled: true
+    config:
+      fail-fast: true
+      discovery:
+        enabled: false
+
+encrypt:
+  failOnError: false
+
+---
+spring:
+  profiles: local
+  cloud:
+    config:
+      enabled: false
+      discovery:
+        enabled: false
+    bus:
+      enabled: false
+
+---
+spring:
+  profiles: logging
+
+logging:
+  level:
+    name.lorenzani.andrea: debug
+  config: classpath:logback-elk.xml

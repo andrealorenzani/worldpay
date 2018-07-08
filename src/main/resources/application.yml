@@ -1,0 +1,22 @@
+server:
+  port: 9000
+
+swagger:
+  api:
+    version: 2.0
+
+management.endpoints.web.exposure.include: info, env, beans
+
+info:
+  build:
+    groupId: '@project.groupId@'
+    artifact: '@project.artifactId@'
+    description: '@project.description@'
+    version: '@project.version@'
+    git:
+      originUrl: '@git.remote.origin.url@'
+      branch: '@git.branch@'
+      commit:
+        id: '@git.commit.id@'
+        time: '@git.commit.time@'
+        message: "@git.commit.message.short@"

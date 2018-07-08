@@ -1,0 +1,238 @@
+swagger: "2.0"
+info:
+  description: "This API let you create, delete and query an offer (as per Worldpay test)"
+  version: "1.0"
+  title: "Worldpay test"
+  termsOfService: "http://swagger.io/terms/"
+  contact:
+    email: "work@andrea.lorenzani.name"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+host: "localhost:9000"
+basePath: "/"
+tags:
+- name: "offer"
+  description: "Handle offer (create, remove, retrieve)"
+schemes:
+- "https"
+- "http"
+paths:
+  /offer:
+    put:
+      tags:
+      - "offer"
+      summary: "Insert a new offer"
+      description: "Insert a new offer"
+      operationId: "createOffer"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "request"
+        description: "The details of an offer"
+        required: true
+        schema:
+          $ref: "#/definitions/Offer"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/StoredOffer"
+        400:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/ErrorMessage"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ErrorMessage"
+    get:
+      tags:
+      - "offer"
+      summary: "Retrieve offer(s)"
+      description: "Retrieve offers (based on criteria)"
+      operationId: "retrieveOffer"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "title"
+        description: "(Part of) the title of the offer"
+        type: "string"
+      - in: "query"
+        name: "vendor"
+        description: "The vendor of the offer"
+        type: "string"
+      - in: "query"
+        name: "description"
+        description: "(Part of) the description of the offer"
+        type: "string"
+      - in: "query"
+        name: "minPrix"
+        description: "Minimal price"
+        type: "integer"
+        format: "int64"
+      - in: "query"
+        name: "maxPrix"
+        description: "Maximum price"
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/Offers"
+        400:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/ErrorMessage"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ErrorMessage"
+  /offer/{offerId}/{memorableWord}:
+    delete:
+      tags:
+      - "offer"
+      summary: "remove a specific offer"
+      description: "Given an offerId, it removes it from the database"
+      operationId: "delOffer"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "offerId"
+        in: "path"
+        description: "The id of the offer you want to remove"
+        required: true
+        type: "string"
+      - name: "memorableWord"
+        in: "path"
+        description: "The memorable word used to create the offer"
+        required: true
+        type: "string"
+        format: "password"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/StoredOffer"
+        400:
+          description: "Invalid input"
+          schema:
+            $ref: "#/definitions/ErrorMessage"
+        500:
+          description: "Internal error"
+          schema:
+            $ref: "#/definitions/ErrorMessage"
+
+definitions:
+  ErrorMessage:
+    properties:
+      code:
+        type: "string"
+        description: "A code for the error"
+        example: "01"
+      message:
+        type: "string"
+        description: "The description of the error"
+        example: "Something went wrng"
+  Offers:
+    properties:
+      offers:
+        type: "array"
+        items:
+          $ref: "#/definitions/StoredOffer"
+  Offer:
+    type: "object"
+    required: 
+    - title
+    - description
+    - vendor
+    - price
+    - memorableWord
+    properties:
+      title:
+        type: "string"
+        description: "The title of the offer"
+        example: "New Tesla Model 3"
+      description:
+        type: "string"
+        description: "The details of the offer"
+        example: "The new Tesla Model 3 at a special price only in our shop"
+      vendor:
+        type: "string"
+        description: "The person or company that created the offer"
+        example: "Andrea Lorenzani Spa."
+      price:
+        type: "number"
+        format: "decimal"
+        description: "The price of the offer"
+        example: 100000
+      currency:
+        type: "string"
+        description: "The currency to apply to the price"
+        default: "GBP"
+        example: "EUR"
+        enum: 
+        - "EUR"
+        - "GBP"
+        - "USD"
+      duration:
+        type: "integer"
+        format: "int32"
+        description: "The duration of the offer in seconds, if not cancelled (DEFAULT: 1 day)"
+        example: 86400
+        default: 86400
+      memorableWord:
+        type: "string"
+        format: "password"
+        description: "A memorable word to send if you want to delete an offer"
+        example: "pa$$w0rd"
+  StoredOffer:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "Unique id of the offer"
+        example: "5c9a908b-60f4-4b18-b72c-fd6ab0e4bf07"
+      title:
+        type: "string"
+        description: "The title of the offer"
+        example: "New Tesla Model 3"
+      description:
+        type: "string"
+        description: "The details of the offer"
+        example: "The new Tesla Model 3 at a special price only in our shop"
+      vendor:
+        type: "string"
+        description: "The person or company that created the offer"
+        example: "Andrea Lorenzani Spa."
+      price:
+        type: "number"
+        format: "decimal"
+        description: "The price of the offer"
+        example: 100000.0
+      currency:
+        type: "string"
+        description: "The currency to apply to the price"
+        default: "GBP"
+        example: "EUR"
+        enum: 
+        - "EUR"
+        - "GBP"
+        - "USD"
+      expiration:
+        type: "string"
+        format: "date-time"
+        description: "The expiration datetime of this offer"
+        example: "2017-07-21T17:32:28Z"
+externalDocs:
+  description: "Find out more about Swagger"
+  url: "http://swagger.io"

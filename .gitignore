@@ -1,0 +1,12 @@
+target/
+.mvn
+
+### Java template
+*.class
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+

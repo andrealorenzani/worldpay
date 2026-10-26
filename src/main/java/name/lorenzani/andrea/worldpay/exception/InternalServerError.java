@@ -6,8 +6,7 @@ public class InternalServerError extends RuntimeException {
         super(message);
     }
 
-    public InternalServerError(String message, Throwable error) {
-        super(message, error);
+    public InternalServerError(String message, Throwable cause) {
+        super(message, cause);
     }
-
 }

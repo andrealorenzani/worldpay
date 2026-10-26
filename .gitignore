@@ -1,12 +1,5 @@
 target/
-.mvn
-
-### Java template
-*.class
-
-### IntelliJ IDEA ###
-.idea
-*.iws
+.idea/
 *.iml
-*.ipr
-
+*.class
+.vscode/

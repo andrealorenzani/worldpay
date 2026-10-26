@@ -1,22 +1,21 @@
 server:
   port: 9000
 
-swagger:
-  api:
-    version: 2.0
+spring:
+  application:
+    name: worldpay-offer
+  web:
+    locale: en
+    locale-resolver: fixed
+  jpa:
+    open-in-view: false
 
-management.endpoints.web.exposure.include: info, env, beans
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
 
-info:
-  build:
-    groupId: '@project.groupId@'
-    artifact: '@project.artifactId@'
-    description: '@project.description@'
-    version: '@project.version@'
-    git:
-      originUrl: '@git.remote.origin.url@'
-      branch: '@git.branch@'
-      commit:
-        id: '@git.commit.id@'
-        time: '@git.commit.time@'
-        message: "@git.commit.message.short@"
+logging:
+  level:
+    name.lorenzani.andrea: info

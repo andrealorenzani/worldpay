@@ -1,15 +1,8 @@
 package name.lorenzani.andrea.worldpay.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-public class ErrorMessage {
-
-    private String code;
-    private String message;
-
+public record ErrorMessage(
+        @Schema(description = "A code for the error", example = "02") String code,
+        @Schema(description = "The description of the error", example = "Wrong ID or MEMORABLEWORD") String message) {
 }

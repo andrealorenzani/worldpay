@@ -1,245 +1,168 @@
 package name.lorenzani.andrea.worldpay.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.restassured.RestAssured;
 import name.lorenzani.andrea.worldpay.exception.BadRequest;
 import name.lorenzani.andrea.worldpay.exception.InternalServerError;
-import name.lorenzani.andrea.worldpay.model.Offer;
+import name.lorenzani.andrea.worldpay.model.OfferCurrency;
+import name.lorenzani.andrea.worldpay.model.OfferView;
 import name.lorenzani.andrea.worldpay.model.Offers;
-import name.lorenzani.andrea.worldpay.model.StoredOffer;
 import name.lorenzani.andrea.worldpay.service.OfferService;
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.internal.matchers.Same;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
-import java.util.Collections;
+import java.time.Instant;
 import java.util.List;
 
-import static io.restassured.RestAssured.given;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
-public class WorldpayOfferControllerTest {
+@WebMvcTest(WorldpayOfferController.class)
+class WorldpayOfferControllerTest {
 
-    @LocalServerPort
-    int serverPort;
+    private static final String VALID_OFFER = """
+            {"title":"Title","description":"Description","vendor":"Vendor","price":1000,"memorableWord":"Memorable"}""";
+
+    private static final OfferView STORED = new OfferView("id-1", "Stored", "Description", "Vendor",
+            BigDecimal.valueOf(1000), OfferCurrency.GBP, Instant.parse("2026-01-02T12:00:00Z"));
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private MockMvc mvc;
 
-    @MockBean
+    @MockitoBean
     private OfferService offerService;
 
-    private Offer basicOkOffer;
-
-    @Before
-    public void setUp() {
-        basicOkOffer = new Offer();
-        basicOkOffer.setDescription("Description");
-        basicOkOffer.setTitle("Title");
-        basicOkOffer.setVendor("Vendor");
-        basicOkOffer.setMemorableWord("Memorable");
-        basicOkOffer.setPrice(new BigDecimal(1000));
-        RestAssured.port = serverPort;
-    }
-
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
-    @Test
-    public void createOffer_shouldGetOkResponse() throws Exception {
-
-        String title = "This is a mocked store";
-
-        StoredOffer mockStore = new StoredOffer();
-        mockStore.setTitle(title);
-
-        when(offerService.store(any(Offer.class))).thenReturn(mockStore);
-
-        //When
-        given()
-            .body(objectMapper.writeValueAsBytes(basicOkOffer))
-            .accept(MediaType.APPLICATION_JSON_VALUE)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .log().everything().
-        when()
-            .post("/offer").
-        then().log().everything().
-            statusCode(HttpStatus.OK.value())
-            .body("title", is(equalTo(title)));
+    private static MockHttpServletRequestBuilder createRequest(String body) {
+        return post("/offer").contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON).content(body);
     }
 
     @Test
-    public void createOffer_shouldGetNokResponse() throws Exception {
-        //Given
-        when(offerService.store(any(Offer.class)))
-                .thenThrow(new BadRequest("This is a mocked error"));
-        //When
-        given()
-            .body(objectMapper.writeValueAsBytes(basicOkOffer))
-            .accept(MediaType.APPLICATION_JSON_VALUE)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .log().everything().
-        when()
-            .post("/offer").
-        then().log().everything().
-            statusCode(HttpStatus.BAD_REQUEST.value());
+    void createOfferReturnsTheStoredOffer() throws Exception {
+        when(offerService.store(any())).thenReturn(STORED);
+
+        mvc.perform(createRequest(VALID_OFFER))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("id-1"))
+                .andExpect(jsonPath("$.title").value("Stored"))
+                .andExpect(jsonPath("$.expiration").value("2026-01-02T12:00:00Z"))
+                .andExpect(jsonPath("$.memorableWord").doesNotExist());
     }
 
     @Test
-    public void createOffer_shouldHandleInternalServerError() throws Exception {
-        //Given
-        when(offerService.store(any(Offer.class)))
-                .thenThrow(new InternalServerError("This is a mocked error"));
-        //When
-        given()
-            .body(objectMapper.writeValueAsBytes(basicOkOffer))
-            .accept(MediaType.APPLICATION_JSON_VALUE)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .log().everything().
-            when()
-            .post("/offer").
-            then().log().everything().
-            statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+    void createOfferAppliesTheDefaultsBeforeCallingTheService() throws Exception {
+        when(offerService.store(any())).thenReturn(STORED);
+
+        mvc.perform(createRequest(VALID_OFFER)).andExpect(status().isOk());
+
+        verify(offerService).store(new name.lorenzani.andrea.worldpay.model.Offer("Title", "Description", "Vendor",
+                BigDecimal.valueOf(1000), OfferCurrency.GBP, 86_400, "Memorable"));
     }
 
     @Test
-    public void retrieveOffer_shouldGetOkResponse() throws Exception {
-
-        String title = "Mock inRes";
-        Offers res = new Offers();
-        StoredOffer inRes = new StoredOffer();
-        inRes.setTitle(title);
-        res.setOffers(Collections.singletonList(inRes));
-
-        //Given
-        when(offerService.retrieve(isNull(), isNull(), isNull(), isNull(), isNull()))
-                .thenReturn(res);
-        //When
-        List<StoredOffer> retrieved = given()
-            .accept(MediaType.APPLICATION_JSON_VALUE)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .log().everything().
-            when()
-            .get("/offer").
-            then().log().everything().
-            statusCode(HttpStatus.OK.value())
-            .extract()
-            .body().jsonPath().getList("offers", StoredOffer.class);
-        Assert.assertThat(retrieved, is(equalTo(res.getOffers())));
+    void createOfferValidatesTheInput() throws Exception {
+        mvc.perform(createRequest("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("03"))
+                .andExpect(jsonPath("$.message").value(
+                        "description must not be blank, memorableWord must not be blank, price must not be null, "
+                                + "title must not be blank, vendor must not be blank"));
     }
 
     @Test
-    public void retrieveOffer_shouldGetNokResponse() throws Exception {
-
-       //Given
-        when(offerService.retrieve(isNull(), isNull(), isNull(), isNull(), isNull()))
-                .thenThrow(new BadRequest("Mock error"));
-        //When
-        given()
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .log().everything().
-                        when()
-                .get("/offer").
-                        then().log().everything().
-                        statusCode(HttpStatus.BAD_REQUEST.value());
+    void createOfferRejectsMalformedJsonAndUnknownCurrencies() throws Exception {
+        mvc.perform(createRequest("{not json")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("03"));
+        mvc.perform(createRequest(VALID_OFFER.replace("\"price\"", "\"currency\":\"XXX\",\"price\"")))
+                .andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("03"));
     }
 
     @Test
-    public void retrieveOffer_shouldGetInternalServerError() throws Exception {
+    void createOfferMapsServiceErrors() throws Exception {
+        doThrow(new BadRequest("This is a mocked error")).when(offerService).store(any());
+        mvc.perform(createRequest(VALID_OFFER)).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("02")).andExpect(jsonPath("$.message").value("This is a mocked error"));
 
-       //Given
-        when(offerService.retrieve(isNull(), isNull(), isNull(), isNull(), isNull()))
-                .thenThrow(new InternalServerError("Mock error"));
-        //When
-        given()
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .log().everything().
-                        when()
-                .get("/offer").
-                        then().log().everything().
-                        statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        doThrow(new InternalServerError("mocked")).when(offerService).store(any());
+        mvc.perform(createRequest(VALID_OFFER)).andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("01"));
     }
 
     @Test
-    public void deleteOffer_shouldGetOkResponse() throws Exception {
+    void retrieveOfferPassesTheCriteria() throws Exception {
+        when(offerService.retrieve(any(), any(), any(), any(), any())).thenReturn(new Offers(List.of(STORED)));
 
-        StoredOffer so = new StoredOffer();
-        so.setTitle("title");
+        mvc.perform(get("/offer?title=tit&vendor=v&description=d&minPrix=10.5&maxPrix=20").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.offers[0].title").value("Stored"));
 
-        //Given
-        when(offerService.delete(anyString(), anyString()))
-                .thenReturn(so);
-        //When
-        StoredOffer retrieved = given()
-            .accept(MediaType.APPLICATION_JSON_VALUE)
-            .contentType(MediaType.APPLICATION_JSON_VALUE)
-            .log().everything().
-            when()
-            .delete("/offer/a/b").
-            then().log().everything().
-            statusCode(HttpStatus.OK.value())
-            .extract()
-            .body().jsonPath().getObject(".", StoredOffer.class);
-        Assert.assertThat(retrieved, is(equalTo(so)));
+        verify(offerService).retrieve("tit", "v", "d", new BigDecimal("10.5"), new BigDecimal("20"));
     }
 
     @Test
-    public void deleteOffer_shouldGetNokResponse() throws Exception {
+    void retrieveOfferWithoutCriteria() throws Exception {
+        when(offerService.retrieve(isNull(), isNull(), isNull(), isNull(), isNull())).thenReturn(new Offers(List.of()));
 
-       //Given
-        when(offerService.delete(anyString(), anyString()))
-                .thenThrow(new BadRequest("Mock error"));
-        //When
-        given()
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .log().everything().
-                        when()
-                .delete("/offer/a/b").
-                        then().log().everything().
-                        statusCode(HttpStatus.BAD_REQUEST.value());
+        mvc.perform(get("/offer")).andExpect(status().isOk()).andExpect(jsonPath("$.offers").isEmpty());
     }
 
     @Test
-    public void deleteOffer_shouldGetInternalServerError() throws Exception {
-
-       //Given
-        when(offerService.delete(anyString(), anyString()))
-                .thenThrow(new InternalServerError("Mock error"));
-        //When
-        given()
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .log().everything().
-                        when()
-                .delete("/offer/a/b").
-                        then().log().everything().
-                        statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+    void retrieveOfferRejectsANonNumericPrice() throws Exception {
+        mvc.perform(get("/offer?minPrix=cheap")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("03"));
     }
 
+    @Test
+    void retrieveOfferMapsServiceErrors() throws Exception {
+        doThrow(new BadRequest("Mock error")).when(offerService).retrieve(any(), any(), any(), any(), any());
+        mvc.perform(get("/offer")).andExpect(status().isBadRequest());
+
+        doThrow(new InternalServerError("Mock error")).when(offerService).retrieve(any(), any(), any(), any(), any());
+        mvc.perform(get("/offer")).andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void deleteOfferReturnsTheDeletedOffer() throws Exception {
+        when(offerService.delete("a", "b")).thenReturn(STORED);
+
+        mvc.perform(delete("/offer/a/b")).andExpect(status().isOk()).andExpect(jsonPath("$.id").value("id-1"));
+    }
+
+    @Test
+    void deleteOfferMapsServiceErrors() throws Exception {
+        doThrow(new BadRequest("Mock error")).when(offerService).delete(anyString(), anyString());
+        mvc.perform(delete("/offer/a/b")).andExpect(status().isBadRequest()).andExpect(jsonPath("$.code").value("02"));
+
+        doThrow(new InternalServerError("Mock error")).when(offerService).delete(anyString(), anyString());
+        mvc.perform(delete("/offer/a/b")).andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    void unexpectedErrorsDoNotLeakTheirDetails() throws Exception {
+        doThrow(new IllegalStateException("secret detail")).when(offerService).delete(anyString(), anyString());
+
+        mvc.perform(delete("/offer/a/b"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("99"))
+                .andExpect(jsonPath("$.message").value("Unexpected error"));
+    }
+
+    @Test
+    void unknownPathsAndMethodsAreClientErrors() throws Exception {
+        mvc.perform(get("/nothing/here")).andExpect(status().isNotFound()).andExpect(jsonPath("$.code").value("404"));
+        mvc.perform(post("/offer/a/b")).andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.code").value("405"));
+    }
 }

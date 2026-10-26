@@ -1,51 +1,94 @@
 package name.lorenzani.andrea.worldpay.model;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import javax.persistence.*;
 import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.util.Date;
+import java.time.Instant;
 
-@Data
+/** An offer as it is stored. It is never sent as it is: see {@link OfferView}. */
 @Entity
-@NoArgsConstructor
 @Table(name = "offers")
 public class StoredOffer {
 
     @Id
-    @ApiModelProperty(example = "a09ee932-c8cc-4025-9292-101ebec7f175", value = "The id of the offer")
-    private String id = null;
+    private String id;
 
     @Column(nullable = false)
-    @ApiModelProperty(example = "New Tesla Model 3", value = "The title of the offer")
-    private String title = null;
+    private String title;
 
     @Column(nullable = false)
-    @ApiModelProperty(example = "The new Tesla Model 3 at a special price only in our shop", value = "The details of the offer")
-    private String description = null;
+    private String description;
 
     @Column(nullable = false)
-    @ApiModelProperty(example = "Andrea Lorenzani Spa.", value = "The person or company that created the offer")
-    private String vendor = null;
+    private String vendor;
 
     @Column(nullable = false)
-    @ApiModelProperty(example = "100000", value = "The price of the offer")
-    private BigDecimal price = null;
+    private BigDecimal price;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OfferCurrency currency;
 
     @Column(nullable = false)
-    @ApiModelProperty(example = "EUR", value = "The currency to apply to the price")
-    private CurrencyEnum currency = CurrencyEnum.GBP;
+    private Instant expiration;
 
+    /** The hash of the memorable word. */
     @Column(nullable = false)
-    @ApiModelProperty(example = "2017-07-21T17:32:28Z", value = "The expiration datetime of this offer")
-    private Date expiration = null;
+    private String memorableWord;
 
-    @Column(nullable = false)
-    @JsonIgnore
-    private String memorableWord = null;
+    protected StoredOffer() {
+    }
+
+    public StoredOffer(String id, String title, String description, String vendor, BigDecimal price,
+                       OfferCurrency currency, Instant expiration, String memorableWord) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.vendor = vendor;
+        this.price = price;
+        this.currency = currency;
+        this.expiration = expiration;
+        this.memorableWord = memorableWord;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getVendor() {
+        return vendor;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public OfferCurrency getCurrency() {
+        return currency;
+    }
+
+    public Instant getExpiration() {
+        return expiration;
+    }
+
+    public String getMemorableWord() {
+        return memorableWord;
+    }
+
+    public boolean isExpiredAt(Instant instant) {
+        return !expiration.isAfter(instant);
+    }
 }

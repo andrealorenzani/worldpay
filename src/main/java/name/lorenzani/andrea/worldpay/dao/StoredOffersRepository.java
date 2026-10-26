@@ -1,18 +1,34 @@
 package name.lorenzani.andrea.worldpay.dao;
 
 import name.lorenzani.andrea.worldpay.model.StoredOffer;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.Repository;
 import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
-public interface StoredOffersRepository extends CrudRepository<StoredOffer, String> {
+public interface StoredOffersRepository extends JpaRepository<StoredOffer, String> {
 
-    @Query("SELECT p FROM StoredOffer p WHERE p.expiration > NOW() AND (:title IS NULL OR LOWER(p.title) LIKE CONCAT('%',:title,'%')) AND (:vendor IS NULL OR LOWER(p.vendor) = LOWER(:vendor)) AND (:description IS NULL OR LOWER(p.description) LIKE CONCAT('%',:description,'%')) AND (:minprix IS NULL OR p.price >= :minprix) AND (:maxprix IS NULL OR p.price <= :maxprix)")
-    public List<StoredOffer> findByCriteria(@Param("title") String title, @Param("vendor") String vendor, @Param("description") String description, @Param("minprix") BigDecimal minprix, @Param("maxprix") BigDecimal maxprix);
-    @Query("DELETE FROM StoredOffer p WHERE p.expiration > NOW() AND :id = p.id AND :memorableWord = p.memorableWord")
-    public Integer deleteIfMemorable(@Param("id") String id, @Param("memorableWord") String memorableWord);
+    /**
+     * The offers that are not expired and match all the criteria that are not null: the title and the description
+     * contain the given text, the vendor is the given one (ignoring the case), the price is in the range.
+     */
+    @Query("""
+            SELECT o FROM StoredOffer o
+            WHERE o.expiration > :now
+              AND (:title IS NULL OR LOWER(o.title) LIKE LOWER(CONCAT('%', :title, '%')))
+              AND (:vendor IS NULL OR LOWER(o.vendor) = LOWER(:vendor))
+              AND (:description IS NULL OR LOWER(o.description) LIKE LOWER(CONCAT('%', :description, '%')))
+              AND (:minPrice IS NULL OR o.price >= :minPrice)
+              AND (:maxPrice IS NULL OR o.price <= :maxPrice)
+            ORDER BY o.expiration, o.id
+            """)
+    List<StoredOffer> findByCriteria(@Param("now") Instant now,
+                                     @Param("title") String title,
+                                     @Param("vendor") String vendor,
+                                     @Param("description") String description,
+                                     @Param("minPrice") BigDecimal minPrice,
+                                     @Param("maxPrice") BigDecimal maxPrice);
 }

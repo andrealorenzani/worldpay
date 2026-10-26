@@ -1,0 +1,364 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Worldpay offers",
+    "description": "This API lets you create, delete and query an offer (as per Worldpay test)",
+    "contact": {
+      "email": "work@andrea.lorenzani.name"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "2.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost",
+      "description": "Generated server url"
+    }
+  ],
+  "tags": [
+    {
+      "name": "offer",
+      "description": "Handle offer (create, remove, retrieve)"
+    }
+  ],
+  "paths": {
+    "/offer": {
+      "get": {
+        "tags": [
+          "offer"
+        ],
+        "summary": "Retrieve offer(s)",
+        "description": "Retrieves the offers that did not expire and match all the given criteria",
+        "operationId": "retrieveOffer",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "description": "(Part of) the title of the offer",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "vendor",
+            "in": "query",
+            "description": "The vendor of the offer",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "description": "(Part of) the description of the offer",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "minPrix",
+            "in": "query",
+            "description": "Minimal price",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "maxPrix",
+            "in": "query",
+            "description": "Maximum price",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Offers"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "offer"
+        ],
+        "summary": "Insert a new offer",
+        "operationId": "createOffer",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Offer"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferView"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/offer/{offerId}/{memorableWord}": {
+      "delete": {
+        "tags": [
+          "offer"
+        ],
+        "summary": "Remove a specific offer",
+        "description": "Given an offerId and the memorable word used to create it, it removes the offer (unless it expired)",
+        "operationId": "delOffer",
+        "parameters": [
+          {
+            "name": "offerId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "memorableWord",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorMessage"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfferView"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorMessage": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string",
+            "description": "A code for the error",
+            "example": "02"
+          },
+          "message": {
+            "type": "string",
+            "description": "The description of the error",
+            "example": "Wrong ID or MEMORABLEWORD"
+          }
+        }
+      },
+      "Offer": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "The title of the offer",
+            "example": "New Tesla Model 3",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "description": "The details of the offer",
+            "example": "The new Tesla Model 3 at a special price only in our shop",
+            "minLength": 1
+          },
+          "vendor": {
+            "type": "string",
+            "description": "The person or company that created the offer",
+            "example": "Andrea Lorenzani Spa.",
+            "minLength": 1
+          },
+          "price": {
+            "type": "number",
+            "description": "The price of the offer",
+            "example": 100000,
+            "minimum": 0
+          },
+          "currency": {
+            "type": "string",
+            "default": "GBP",
+            "description": "The currency to apply to the price",
+            "enum": [
+              "EUR",
+              "GBP",
+              "USD"
+            ],
+            "example": "EUR"
+          },
+          "duration": {
+            "type": "integer",
+            "format": "int32",
+            "default": 86400,
+            "description": "The duration of the offer in seconds, if not cancelled (DEFAULT: 1 day)",
+            "example": 86400,
+            "exclusiveMinimum": 0
+          },
+          "memorableWord": {
+            "type": "string",
+            "description": "A memorable word to send if you want to delete an offer",
+            "example": "pa$$w0rd",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "description",
+          "memorableWord",
+          "price",
+          "title",
+          "vendor"
+        ]
+      },
+      "OfferView": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The id of the offer",
+            "example": "a09ee932-c8cc-4025-9292-101ebec7f175"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the offer",
+            "example": "New Tesla Model 3"
+          },
+          "description": {
+            "type": "string",
+            "description": "The details of the offer",
+            "example": "The new Tesla Model 3 at a special price only in our shop"
+          },
+          "vendor": {
+            "type": "string",
+            "description": "The person or company that created the offer",
+            "example": "Andrea Lorenzani Spa."
+          },
+          "price": {
+            "type": "number",
+            "description": "The price of the offer",
+            "example": 100000
+          },
+          "currency": {
+            "type": "string",
+            "description": "The currency to apply to the price",
+            "enum": [
+              "EUR",
+              "GBP",
+              "USD"
+            ],
+            "example": "EUR"
+          },
+          "expiration": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The expiration datetime of this offer",
+            "example": "2026-07-21T17:32:28Z"
+          }
+        }
+      },
+      "Offers": {
+        "type": "object",
+        "properties": {
+          "offers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OfferView"
+            }
+          }
+        }
+      }
+    }
+  }
+}
